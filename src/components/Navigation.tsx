@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Phone, Instagram } from 'lucide-react';
+import { Menu, X, Phone, Instagram, Search, ShoppingBag, User } from 'lucide-react';
 import { Button } from './ui/button';
 import logoImage from '@/assets/aurelise-logo.jpg';
 
@@ -15,6 +15,8 @@ const Navigation = () => {
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
   ];
+
+  const [cartCount] = useState(0); // Will be connected to cart state later
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -38,11 +40,10 @@ const Navigation = () => {
               <img 
                 src={logoImage} 
                 alt="Aurélise Logo" 
-                className="h-12 w-auto object-contain rounded-md group-hover:scale-105 transition-transform duration-300"
+                className="h-14 w-auto object-contain rounded-lg group-hover:scale-105 transition-transform duration-300 shadow-md"
               />
               <div className="hidden sm:block">
-                <h1 className="font-heading text-2xl font-bold text-primary">Aurélise</h1>
-                <p className="text-xs text-muted-foreground italic">Where Every Bite Tells a Story</p>
+                <p className="text-sm text-muted-foreground italic font-medium">Where Every Bite Tells a Story</p>
               </div>
             </Link>
 
@@ -63,26 +64,22 @@ const Navigation = () => {
               ))}
             </div>
 
-            {/* Contact & CTA */}
+            {/* Actions */}
             <div className="hidden lg:flex items-center space-x-4">
-              <a 
-                href="https://wa.me/447440645831" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center space-x-1 text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Phone className="h-4 w-4" />
-                <span className="text-sm">WhatsApp</span>
-              </a>
-              <a 
-                href="https://instagram.com/aurelise.uk" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center space-x-1 text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Instagram className="h-4 w-4" />
-                <span className="text-sm">@aurelise.uk</span>
-              </a>
+              <button className="p-2 text-muted-foreground hover:text-primary transition-colors">
+                <Search className="h-5 w-5" />
+              </button>
+              <Link to="/cart" className="relative p-2 text-muted-foreground hover:text-primary transition-colors">
+                <ShoppingBag className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+              <Link to="/account" className="p-2 text-muted-foreground hover:text-primary transition-colors">
+                <User className="h-5 w-5" />
+              </Link>
               <Button className="btn-hero">
                 Pre-Order Now
               </Button>
@@ -115,31 +112,45 @@ const Navigation = () => {
                     {item.name}
                   </Link>
                 ))}
-                <div className="pt-4 border-t border-border">
-                  <div className="flex items-center justify-between px-4">
-                    <a 
-                      href="https://wa.me/447440645831" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-2 text-muted-foreground"
-                    >
-                      <Phone className="h-4 w-4" />
-                      <span className="text-sm">WhatsApp</span>
-                    </a>
-                    <a 
-                      href="https://instagram.com/aurelise.uk" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center space-x-2 text-muted-foreground"
-                    >
-                      <Instagram className="h-4 w-4" />
-                      <span className="text-sm">Instagram</span>
-                    </a>
+                  <div className="pt-4 border-t border-border space-y-4">
+                    <div className="flex items-center justify-between px-4">
+                      <a 
+                        href="https://wa.me/447440645831" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 text-muted-foreground"
+                      >
+                        <Phone className="h-4 w-4" />
+                        <span className="text-sm">WhatsApp</span>
+                      </a>
+                      <a 
+                        href="https://instagram.com/aurelise.uk" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-2 text-muted-foreground"
+                      >
+                        <Instagram className="h-4 w-4" />
+                        <span className="text-sm">Instagram</span>
+                      </a>
+                    </div>
+                    <div className="px-4 space-y-2">
+                      <button className="p-2 text-muted-foreground hover:text-primary transition-colors w-full flex items-center space-x-2">
+                        <Search className="h-4 w-4" />
+                        <span>Search</span>
+                      </button>
+                      <Link to="/cart" className="p-2 text-muted-foreground hover:text-primary transition-colors w-full flex items-center space-x-2">
+                        <ShoppingBag className="h-4 w-4" />
+                        <span>Cart {cartCount > 0 && `(${cartCount})`}</span>
+                      </Link>
+                      <Link to="/account" className="p-2 text-muted-foreground hover:text-primary transition-colors w-full flex items-center space-x-2">
+                        <User className="h-4 w-4" />
+                        <span>Account</span>
+                      </Link>
+                    </div>
+                    <Button className="btn-hero w-full mx-4" style={{ width: 'calc(100% - 2rem)' }}>
+                      Pre-Order Now
+                    </Button>
                   </div>
-                  <Button className="btn-hero w-full mt-4 mx-4" style={{ width: 'calc(100% - 2rem)' }}>
-                    Pre-Order Now
-                  </Button>
-                </div>
               </div>
             </div>
           )}
