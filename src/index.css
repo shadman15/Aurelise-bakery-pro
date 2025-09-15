@@ -6,91 +6,98 @@
 All colors MUST be HSL.
 */
 
+/* Aurélise Bakery Design System - Elegant, Warm, Artisanal
+Brand Colors: Rich Gold (#D4AF37), Cream (#F8F1E7), Cocoa Brown (#4A3327), Soft Blush (#F1D4C9)
+Typography: Playfair Display (headings), Inter (body)
+All colors MUST be HSL.
+*/
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Brand Colors */
+    --aurelise-gold: 43 69% 52%;         /* #D4AF37 - Rich Gold */
+    --aurelise-gold-light: 45 75% 65%;   /* Lighter gold for accents */
+    --aurelise-cream: 39 50% 95%;        /* #F8F1E7 - Warm Cream */
+    --aurelise-cocoa: 25 29% 22%;        /* #4A3327 - Deep Cocoa Brown */
+    --aurelise-blush: 15 45% 88%;        /* #F1D4C9 - Soft Blush */
+    --aurelise-cocoa-light: 25 25% 35%;  /* Lighter cocoa for text */
+    
+    /* Semantic mappings */
+    --background: var(--aurelise-cream);
+    --foreground: var(--aurelise-cocoa);
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: var(--aurelise-cream);
+    --card-foreground: var(--aurelise-cocoa);
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: var(--aurelise-cream);
+    --popover-foreground: var(--aurelise-cocoa);
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: var(--aurelise-gold);
+    --primary-foreground: var(--aurelise-cream);
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: var(--aurelise-blush);
+    --secondary-foreground: var(--aurelise-cocoa);
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: var(--aurelise-blush);
+    --muted-foreground: var(--aurelise-cocoa-light);
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: var(--aurelise-gold-light);
+    --accent-foreground: var(--aurelise-cocoa);
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: var(--aurelise-cream);
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: var(--aurelise-blush);
+    --input: var(--aurelise-cream);
+    --ring: var(--aurelise-gold);
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Custom Design Tokens */
+    --gradient-hero: linear-gradient(135deg, hsl(var(--aurelise-gold)) 0%, hsl(var(--aurelise-gold-light)) 100%);
+    --gradient-warm: linear-gradient(180deg, hsl(var(--aurelise-cream)) 0%, hsl(var(--aurelise-blush)) 100%);
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--aurelise-cocoa) / 0.2);
+    --shadow-gold: 0 0 40px hsl(var(--aurelise-gold) / 0.3);
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: var(--aurelise-cream);
+    --sidebar-foreground: var(--aurelise-cocoa);
+    --sidebar-primary: var(--aurelise-gold);
+    --sidebar-primary-foreground: var(--aurelise-cream);
+    --sidebar-accent: var(--aurelise-blush);
+    --sidebar-accent-foreground: var(--aurelise-cocoa);
+    --sidebar-border: var(--aurelise-blush);
+    --sidebar-ring: var(--aurelise-gold);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
+    --background: var(--aurelise-cocoa);
+    --foreground: var(--aurelise-cream);
+    --card: var(--aurelise-cocoa);
+    --card-foreground: var(--aurelise-cream);
+    --popover: var(--aurelise-cocoa);
+    --popover-foreground: var(--aurelise-cream);
+    --primary: var(--aurelise-gold);
+    --primary-foreground: var(--aurelise-cocoa);
+    --secondary: 25 25% 15%;
+    --secondary-foreground: var(--aurelise-cream);
+    --muted: 25 25% 15%;
+    --muted-foreground: var(--aurelise-blush);
+    --accent: var(--aurelise-gold-light);
+    --accent-foreground: var(--aurelise-cocoa);
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --destructive-foreground: var(--aurelise-cream);
+    --border: 25 25% 15%;
+    --input: 25 25% 15%;
+    --ring: var(--aurelise-gold);
+    --sidebar-background: var(--aurelise-cocoa);
+    --sidebar-foreground: var(--aurelise-cream);
+    --sidebar-primary: var(--aurelise-gold);
+    --sidebar-primary-foreground: var(--aurelise-cocoa);
+    --sidebar-accent: 25 25% 15%;
+    --sidebar-accent-foreground: var(--aurelise-cream);
+    --sidebar-border: 25 25% 15%;
+    --sidebar-ring: var(--aurelise-gold);
   }
 }
 
@@ -100,6 +107,54 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+@layer components {
+  /* Custom Component Classes */
+  .btn-hero {
+    @apply bg-primary text-primary-foreground px-8 py-4 rounded-lg font-semibold 
+           shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300
+           border-2 border-transparent hover:border-primary/20;
+  }
+  
+  .btn-secondary {
+    @apply bg-transparent text-primary border-2 border-primary px-8 py-4 rounded-lg 
+           font-semibold hover:bg-primary hover:text-primary-foreground 
+           transition-all duration-300;
+  }
+  
+  .text-hero {
+    @apply text-5xl lg:text-7xl font-bold text-foreground font-heading leading-tight;
+  }
+  
+  .text-tagline {
+    @apply text-xl lg:text-2xl text-muted-foreground font-light italic;
+  }
+  
+  .card-elegant {
+    @apply bg-card border border-border rounded-xl shadow-lg hover:shadow-xl 
+           transition-all duration-300 overflow-hidden;
+  }
+  
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  
+  .gradient-warm {
+    background: var(--gradient-warm);
+  }
+  
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
+  }
+  
+  .shadow-gold {
+    box-shadow: var(--shadow-gold);
   }
 }

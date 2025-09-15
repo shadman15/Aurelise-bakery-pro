@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        'heading': ['Playfair Display', 'serif'],
+        'body': ['Inter', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -56,6 +60,15 @@ export default {
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
+        },
+        // Custom Aurélise colors
+        aurelise: {
+          gold: "hsl(var(--aurelise-gold))",
+          'gold-light': "hsl(var(--aurelise-gold-light))",
+          cream: "hsl(var(--aurelise-cream))",
+          cocoa: "hsl(var(--aurelise-cocoa))",
+          blush: "hsl(var(--aurelise-blush))",
+          'cocoa-light': "hsl(var(--aurelise-cocoa-light))",
         },
       },
       borderRadius: {
