@@ -1,1 +1,13 @@
 project_id = "tvxydsagumrognunvezk"
+
+[functions.products-api]
+verify_jwt = false
+
+[functions.orders-api]
+verify_jwt = false
+
+[functions.admin-api]
+verify_jwt = false
+
+[functions.user-api]
+verify_jwt = false
