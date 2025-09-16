@@ -150,7 +150,7 @@ All colors MUST be HSL.
   }
 
   .card-product {
-    @apply bg-card rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-border/30 overflow-hidden group;
+    @apply bg-card rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-border/30 overflow-hidden;
   }
 
   .gradient-overlay {
