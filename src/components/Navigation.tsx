@@ -1,12 +1,35 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Phone, Instagram, Search, ShoppingBag, User } from 'lucide-react';
 import { Button } from './ui/button';
 import logoImage from '@/assets/aurelise-logo.jpg';
+import Modal from './Modal';
+import Sidebar from './Sidebar';
+import Drawer from './Drawer';
+import Toast from './Toast';
 
-const Navigation = () => {
+const dummyProducts = [
+  { id: 1, name: "Chocolate Croissant", price: 3.5 },
+  { id: 2, name: "Almond Tart", price: 4.0 },
+  { id: 3, name: "Baguette", price: 2.0 },
+  { id: 4, name: "Eclair", price: 3.0 },
+  { id: 5, name: "Chocolate Cake", price: 6.0 },
+  { id: 6, name: "Vanilla Cake", price: 5.5 },
+  { id: 7, name: "Red Velvet Cake", price: 7.0 },
+];
+
+interface NavigationProps {
+  cartItems: any[];
+  setCartItems: React.Dispatch<React.SetStateAction<any[]>>;
+  onAddToCart: (product: any) => void;
+}
+
+const Navigation = ({ cartItems, setCartItems, onAddToCart }: NavigationProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const isActive = (href: string) => location.pathname === href;
 
   const navItems = [
     { name: 'Home', href: '/' },
@@ -16,9 +39,46 @@ const Navigation = () => {
     { name: 'Contact', href: '/contact' },
   ];
 
-  const [cartCount] = useState(0); // Will be connected to cart state later
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [signupMode, setSignupMode] = useState(false);
 
-  const isActive = (path: string) => location.pathname === path;
+  // Search filter (simulate)
+  const filteredProducts = dummyProducts.filter((p) =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Handlers
+  const handleSearchClick = () => setSearchOpen(true);
+  const handleCartClick = () => setCartOpen(true);
+  const handleLoginClick = () => setLoginOpen(true);
+  const handlePreOrderClick = () => {
+    navigate("/catalog");
+  };
+  const handleAddToCart = (product: {id:number, name:string, price:number}) => {
+    setCartItems((prev) => {
+      const existing = prev.find((item) => item.id === product.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
+        );
+      }
+      return [...prev, { ...product, qty: 1 }];
+    });
+    setToastMsg("Product added to cart");
+    setToastOpen(true);
+  };
+
+  const total = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+  // Close search drawer on route change
+  useEffect(() => {
+    setSearchOpen(false);
+  }, [location.pathname]);
 
   return (
     <>
@@ -66,21 +126,30 @@ const Navigation = () => {
 
             {/* Actions */}
             <div className="hidden lg:flex items-center space-x-4">
-              <button className="p-2 text-muted-foreground hover:text-primary transition-colors">
+              <button
+                className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                onClick={handleSearchClick}
+              >
                 <Search className="h-5 w-5" />
               </button>
-              <Link to="/cart" className="relative p-2 text-muted-foreground hover:text-primary transition-colors">
+              <button
+                className="relative p-2 text-muted-foreground hover:text-primary transition-colors"
+                onClick={handleCartClick}
+              >
                 <ShoppingBag className="h-5 w-5" />
-                {cartCount > 0 && (
+                {cartItems.length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
-                    {cartCount}
+                    {cartItems.reduce((sum, item) => sum + item.qty, 0)}
                   </span>
                 )}
-              </Link>
-              <Link to="/account" className="p-2 text-muted-foreground hover:text-primary transition-colors">
+              </button>
+              <button
+                className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                onClick={handleLoginClick}
+              >
                 <User className="h-5 w-5" />
-              </Link>
-              <Button className="btn-hero">
+              </button>
+              <Button className="btn-hero" onClick={handlePreOrderClick}>
                 Pre-Order Now
               </Button>
             </div>
@@ -156,6 +225,124 @@ const Navigation = () => {
           )}
         </nav>
       </header>
+
+      {/* Modals and Sidebar */}
+      <Drawer open={searchOpen} onClose={() => setSearchOpen(false)} position="top" title="Search Products">
+  <form
+    onSubmit={e => {
+      e.preventDefault();
+      if (searchTerm.trim()) {
+        setSearchOpen(false);
+        navigate(`/catalog?search=${encodeURIComponent(searchTerm.trim())}`);
+      }
+    }}
+  >
+    <input
+      className="w-full border rounded px-3 py-2 mb-4"
+      placeholder="Type to search..."
+      value={searchTerm}
+      onChange={e => setSearchTerm(e.target.value)}
+      autoFocus
+    />
+    <button
+      type="submit"
+      className="w-full bg-primary text-white py-2 rounded hover:bg-primary/90 transition"
+      disabled={!searchTerm.trim()}
+    >
+      Search
+    </button>
+  </form>
+</Drawer>
+
+      <Sidebar open={cartOpen} onClose={() => setCartOpen(false)} title="Your Cart">
+        {cartItems.length === 0 ? (
+          <div className="text-gray-500">Your cart is empty.</div>
+        ) : (
+          <>
+            <ul>
+              {cartItems.map((item) => (
+                <li key={item.id} className="flex justify-between py-2 border-b">
+                  <span>
+                    {item.name} <span className="text-xs text-gray-400">x{item.qty}</span>
+                  </span>
+                  <span>£{(item.price * item.qty).toFixed(2)}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 flex justify-between font-bold">
+              <span>Total:</span>
+              <span>£{total.toFixed(2)}</span>
+            </div>
+            <button
+              className="mt-6 w-full bg-primary text-white py-2 rounded hover:bg-primary/90"
+              onClick={() => { setCartOpen(false); navigate("/checkout"); }}
+            >
+              Go to Checkout
+            </button>
+          </>
+        )}
+      </Sidebar>
+
+      <Modal open={loginOpen} onClose={() => setLoginOpen(false)} title={signupMode ? "Sign Up" : "Login"}>
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            // @ts-ignore
+            const email = e.target.email.value;
+            // @ts-ignore
+            const password = e.target.password.value;
+            if (signupMode) {
+              // @ts-ignore
+              const name = e.target.name.value;
+              console.log("Signup:", { name, email, password });
+            } else {
+              console.log("Login:", { email, password });
+            }
+            setLoginOpen(false);
+          }}
+        >
+          {signupMode && (
+            <input
+              name="name"
+              type="text"
+              required
+              placeholder="Name"
+              className="w-full border rounded px-3 py-2"
+            />
+          )}
+          <input
+            name="email"
+            type="email"
+            required
+            placeholder="Email"
+            className="w-full border rounded px-3 py-2"
+          />
+          <input
+            name="password"
+            type="password"
+            required
+            placeholder="Password"
+            className="w-full border rounded px-3 py-2"
+          />
+          <button
+            type="submit"
+            className="w-full bg-primary text-white py-2 rounded hover:bg-primary/90"
+          >
+            {signupMode ? "Sign Up" : "Login"}
+          </button>
+        </form>
+        <div className="mt-2 text-center">
+          <button
+            className="text-primary underline text-sm"
+            onClick={() => setSignupMode((v) => !v)}
+          >
+            {signupMode ? "Already have an account? Login" : "Don't have an account? Sign Up"}
+          </button>
+        </div>
+      </Modal>
+
+      <Toast message={toastMsg} open={toastOpen} onClose={() => setToastOpen(false)} />
     </>
   );
 };
