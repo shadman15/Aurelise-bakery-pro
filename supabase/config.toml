@@ -11,3 +11,12 @@ verify_jwt = false
 
 [functions.user-api]
 verify_jwt = false
+
+[functions.payments-api]
+verify_jwt = false
+
+[functions.send-order-confirmation]
+verify_jwt = false
+
+[functions.send-notifications]
+verify_jwt = false
