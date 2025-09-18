@@ -1,35 +1,25 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Phone, Instagram, Search, ShoppingBag, User } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, Phone, Instagram, Search, ShoppingBag, User, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
+import { Avatar, AvatarFallback } from './ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '@/hooks/useCart';
+import { AuthModal } from './AuthModal';
+import { SearchDrawer } from './SearchDrawer';
+import { CartDrawer } from './CartDrawer';
 import logoImage from '@/assets/aurelise-logo.jpg';
-import Modal from './Modal';
-import Sidebar from './Sidebar';
-import Drawer from './Drawer';
-import Toast from './Toast';
 
-const dummyProducts = [
-  { id: 1, name: "Chocolate Croissant", price: 3.5 },
-  { id: 2, name: "Almond Tart", price: 4.0 },
-  { id: 3, name: "Baguette", price: 2.0 },
-  { id: 4, name: "Eclair", price: 3.0 },
-  { id: 5, name: "Chocolate Cake", price: 6.0 },
-  { id: 6, name: "Vanilla Cake", price: 5.5 },
-  { id: 7, name: "Red Velvet Cake", price: 7.0 },
-];
-
-interface NavigationProps {
-  cartItems: any[];
-  setCartItems: React.Dispatch<React.SetStateAction<any[]>>;
-  onAddToCart: (product: any) => void;
-}
-
-const Navigation = ({ cartItems, setCartItems, onAddToCart }: NavigationProps) => {
+const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showSearchDrawer, setShowSearchDrawer] = useState(false);
+  const [showCartDrawer, setShowCartDrawer] = useState(false);
+  
   const location = useLocation();
-  const navigate = useNavigate();
-
-  const isActive = (href: string) => location.pathname === href;
+  const { user, signOut } = useAuth();
+  const { totalItems } = useCart();
 
   const navItems = [
     { name: 'Home', href: '/' },
@@ -39,46 +29,14 @@ const Navigation = ({ cartItems, setCartItems, onAddToCart }: NavigationProps) =
     { name: 'Contact', href: '/contact' },
   ];
 
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [cartOpen, setCartOpen] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [toastOpen, setToastOpen] = useState(false);
-  const [toastMsg, setToastMsg] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [signupMode, setSignupMode] = useState(false);
+  const isActive = (path: string) => location.pathname === path;
 
-  // Search filter (simulate)
-  const filteredProducts = dummyProducts.filter((p) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Handlers
-  const handleSearchClick = () => setSearchOpen(true);
-  const handleCartClick = () => setCartOpen(true);
-  const handleLoginClick = () => setLoginOpen(true);
-  const handlePreOrderClick = () => {
-    navigate("/catalog");
+  const getUserInitials = () => {
+    if (!user?.user_metadata) return 'U';
+    const firstName = user.user_metadata.first_name || '';
+    const lastName = user.user_metadata.last_name || '';
+    return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U';
   };
-  const handleAddToCart = (product: {id:number, name:string, price:number}) => {
-    setCartItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
-        );
-      }
-      return [...prev, { ...product, qty: 1 }];
-    });
-    setToastMsg("Product added to cart");
-    setToastOpen(true);
-  };
-
-  const total = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
-
-  // Close search drawer on route change
-  useEffect(() => {
-    setSearchOpen(false);
-  }, [location.pathname]);
 
   return (
     <>
@@ -126,38 +84,87 @@ const Navigation = ({ cartItems, setCartItems, onAddToCart }: NavigationProps) =
 
             {/* Actions */}
             <div className="hidden lg:flex items-center space-x-4">
-              <button
+              <button 
+                onClick={() => setShowSearchDrawer(true)}
                 className="p-2 text-muted-foreground hover:text-primary transition-colors"
-                onClick={handleSearchClick}
+                aria-label="Search"
               >
                 <Search className="h-5 w-5" />
               </button>
-              <button
+              
+              <button 
+                onClick={() => setShowCartDrawer(true)}
                 className="relative p-2 text-muted-foreground hover:text-primary transition-colors"
-                onClick={handleCartClick}
+                aria-label="Shopping cart"
               >
                 <ShoppingBag className="h-5 w-5" />
-                {cartItems.length > 0 && (
+                {totalItems > 0 && (
                   <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
-                    {cartItems.reduce((sum, item) => sum + item.qty, 0)}
+                    {totalItems}
                   </span>
                 )}
               </button>
-              <button
-                className="p-2 text-muted-foreground hover:text-primary transition-colors"
-                onClick={handleLoginClick}
-              >
-                <User className="h-5 w-5" />
-              </button>
-              <Button className="btn-hero" onClick={handlePreOrderClick}>
-                Pre-Order Now
-              </Button>
+
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-10 w-10 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                          {getUserInitials()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <div className="px-2 py-1.5 text-sm font-medium">
+                      {user.user_metadata?.first_name} {user.user_metadata?.last_name}
+                    </div>
+                    <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                      {user.email}
+                    </div>
+                    <DropdownMenuSeparator />
+                    <Link to="/account">
+                      <DropdownMenuItem>
+                        <User className="mr-2 h-4 w-4" />
+                        Account
+                      </DropdownMenuItem>
+                    </Link>
+                    <Link to="/account/orders">
+                      <DropdownMenuItem>
+                        Orders
+                      </DropdownMenuItem>
+                    </Link>
+                    <Link to="/account/favourites">
+                      <DropdownMenuItem>
+                        Favourites
+                      </DropdownMenuItem>
+                    </Link>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={signOut}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button onClick={() => setShowAuthModal(true)} variant="outline">
+                  Sign In
+                </Button>
+              )}
+              
+              <Link to="/menu">
+                <Button className="btn-hero">
+                  Pre-Order Now
+                </Button>
+              </Link>
             </div>
 
             {/* Mobile menu button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="lg:hidden p-2 text-foreground hover:text-primary transition-colors"
+              aria-label="Toggle menu"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -181,168 +188,78 @@ const Navigation = ({ cartItems, setCartItems, onAddToCart }: NavigationProps) =
                     {item.name}
                   </Link>
                 ))}
-                  <div className="pt-4 border-t border-border space-y-4">
-                    <div className="flex items-center justify-between px-4">
-                      <a 
-                        href="https://wa.me/447440645831" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-2 text-muted-foreground"
-                      >
-                        <Phone className="h-4 w-4" />
-                        <span className="text-sm">WhatsApp</span>
-                      </a>
-                      <a 
-                        href="https://instagram.com/aurelise.uk" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-2 text-muted-foreground"
-                      >
-                        <Instagram className="h-4 w-4" />
-                        <span className="text-sm">Instagram</span>
-                      </a>
-                    </div>
-                    <div className="px-4 space-y-2">
-                      <button className="p-2 text-muted-foreground hover:text-primary transition-colors w-full flex items-center space-x-2">
-                        <Search className="h-4 w-4" />
-                        <span>Search</span>
-                      </button>
-                      <Link to="/cart" className="p-2 text-muted-foreground hover:text-primary transition-colors w-full flex items-center space-x-2">
-                        <ShoppingBag className="h-4 w-4" />
-                        <span>Cart {cartCount > 0 && `(${cartCount})`}</span>
-                      </Link>
+                
+                <div className="pt-4 border-t border-border space-y-4">
+                  <div className="flex items-center justify-between px-4">
+                    <a 
+                      href="https://wa.me/447440645831" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-2 text-muted-foreground"
+                    >
+                      <Phone className="h-4 w-4" />
+                      <span className="text-sm">WhatsApp</span>
+                    </a>
+                    <a 
+                      href="https://instagram.com/aurelise.uk" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-2 text-muted-foreground"
+                    >
+                      <Instagram className="h-4 w-4" />
+                      <span className="text-sm">Instagram</span>
+                    </a>
+                  </div>
+                  
+                  <div className="px-4 space-y-2">
+                    <button 
+                      onClick={() => setShowSearchDrawer(true)}
+                      className="p-2 text-muted-foreground hover:text-primary transition-colors w-full flex items-center space-x-2"
+                    >
+                      <Search className="h-4 w-4" />
+                      <span>Search</span>
+                    </button>
+                    
+                    <button 
+                      onClick={() => setShowCartDrawer(true)}
+                      className="p-2 text-muted-foreground hover:text-primary transition-colors w-full flex items-center space-x-2"
+                    >
+                      <ShoppingBag className="h-4 w-4" />
+                      <span>Cart {totalItems > 0 && `(${totalItems})`}</span>
+                    </button>
+                    
+                    {user ? (
                       <Link to="/account" className="p-2 text-muted-foreground hover:text-primary transition-colors w-full flex items-center space-x-2">
                         <User className="h-4 w-4" />
                         <span>Account</span>
                       </Link>
-                    </div>
+                    ) : (
+                      <button 
+                        onClick={() => setShowAuthModal(true)}
+                        className="p-2 text-muted-foreground hover:text-primary transition-colors w-full flex items-center space-x-2"
+                      >
+                        <User className="h-4 w-4" />
+                        <span>Sign In</span>
+                      </button>
+                    )}
+                  </div>
+                  
+                  <Link to="/menu">
                     <Button className="btn-hero w-full mx-4" style={{ width: 'calc(100% - 2rem)' }}>
                       Pre-Order Now
                     </Button>
-                  </div>
+                  </Link>
+                </div>
               </div>
             </div>
           )}
         </nav>
       </header>
 
-      {/* Modals and Sidebar */}
-      <Drawer open={searchOpen} onClose={() => setSearchOpen(false)} position="top" title="Search Products">
-  <form
-    onSubmit={e => {
-      e.preventDefault();
-      if (searchTerm.trim()) {
-        setSearchOpen(false);
-        navigate(`/catalog?search=${encodeURIComponent(searchTerm.trim())}`);
-      }
-    }}
-  >
-    <input
-      className="w-full border rounded px-3 py-2 mb-4"
-      placeholder="Type to search..."
-      value={searchTerm}
-      onChange={e => setSearchTerm(e.target.value)}
-      autoFocus
-    />
-    <button
-      type="submit"
-      className="w-full bg-primary text-white py-2 rounded hover:bg-primary/90 transition"
-      disabled={!searchTerm.trim()}
-    >
-      Search
-    </button>
-  </form>
-</Drawer>
-
-      <Sidebar open={cartOpen} onClose={() => setCartOpen(false)} title="Your Cart">
-        {cartItems.length === 0 ? (
-          <div className="text-gray-500">Your cart is empty.</div>
-        ) : (
-          <>
-            <ul>
-              {cartItems.map((item) => (
-                <li key={item.id} className="flex justify-between py-2 border-b">
-                  <span>
-                    {item.name} <span className="text-xs text-gray-400">x{item.qty}</span>
-                  </span>
-                  <span>£{(item.price * item.qty).toFixed(2)}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-4 flex justify-between font-bold">
-              <span>Total:</span>
-              <span>£{total.toFixed(2)}</span>
-            </div>
-            <button
-              className="mt-6 w-full bg-primary text-white py-2 rounded hover:bg-primary/90"
-              onClick={() => { setCartOpen(false); navigate("/checkout"); }}
-            >
-              Go to Checkout
-            </button>
-          </>
-        )}
-      </Sidebar>
-
-      <Modal open={loginOpen} onClose={() => setLoginOpen(false)} title={signupMode ? "Sign Up" : "Login"}>
-        <form
-          className="space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            // @ts-ignore
-            const email = e.target.email.value;
-            // @ts-ignore
-            const password = e.target.password.value;
-            if (signupMode) {
-              // @ts-ignore
-              const name = e.target.name.value;
-              console.log("Signup:", { name, email, password });
-            } else {
-              console.log("Login:", { email, password });
-            }
-            setLoginOpen(false);
-          }}
-        >
-          {signupMode && (
-            <input
-              name="name"
-              type="text"
-              required
-              placeholder="Name"
-              className="w-full border rounded px-3 py-2"
-            />
-          )}
-          <input
-            name="email"
-            type="email"
-            required
-            placeholder="Email"
-            className="w-full border rounded px-3 py-2"
-          />
-          <input
-            name="password"
-            type="password"
-            required
-            placeholder="Password"
-            className="w-full border rounded px-3 py-2"
-          />
-          <button
-            type="submit"
-            className="w-full bg-primary text-white py-2 rounded hover:bg-primary/90"
-          >
-            {signupMode ? "Sign Up" : "Login"}
-          </button>
-        </form>
-        <div className="mt-2 text-center">
-          <button
-            className="text-primary underline text-sm"
-            onClick={() => setSignupMode((v) => !v)}
-          >
-            {signupMode ? "Already have an account? Login" : "Don't have an account? Sign Up"}
-          </button>
-        </div>
-      </Modal>
-
-      <Toast message={toastMsg} open={toastOpen} onClose={() => setToastOpen(false)} />
+      {/* Modals and Drawers */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      <SearchDrawer isOpen={showSearchDrawer} onClose={() => setShowSearchDrawer(false)} />
+      <CartDrawer isOpen={showCartDrawer} onClose={() => setShowCartDrawer(false)} />
     </>
   );
 };

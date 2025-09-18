@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
+import { useCart } from '@/hooks/useCart';
+import { toast } from '@/hooks/use-toast';
 import basqueImage from '@/assets/basque-cheesecake-2.jpg';
 import tiramisuImage from '@/assets/tiramisu-cheesecake.jpg';
 import coconutImage from '@/assets/coconut-cashew-slice.jpg';
@@ -32,6 +34,18 @@ const signatures = [
 ];
 
 const SignatureCreations = () => {
+  const { addToCart } = useCart();
+
+  const handleOrderNow = async (product: any) => {
+    // This would add a default size to cart and redirect to checkout
+    // For now, let's show a toast indicating the feature needs product data
+    toast({
+      title: 'Coming Soon',
+      description: 'Product ordering will be available once product data is set up.',
+      variant: 'default'
+    });
+  };
+
   return (
     <section className="py-16 lg:py-24 bg-background">
       <div className="container mx-auto px-4 lg:px-8">
@@ -46,7 +60,7 @@ const SignatureCreations = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {signatures.map((cake) => (
-            <div key={cake.id} className="card-product">
+            <div key={cake.id} className="card-product group">
               <div className="relative overflow-hidden aspect-[4/3]">
                 <img 
                   src={cake.image}
