@@ -1,89 +1,114 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Clock, Utensils } from 'lucide-react';
+import { AlertTriangle, Clock, Utensils, ShoppingCart } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useCart } from '@/hooks/useCart';
+import { toast } from '@/hooks/use-toast';
 
-import basqueImage1 from '@/assets/basque-cheesecake-1.jpg';
-import basqueImage2 from '@/assets/basque-cheesecake-2.jpg';
-import basqueImage3 from '@/assets/basque-cheesecake-3.jpg';
-import tiramisuImage from '@/assets/tiramisu-cheesecake.jpg';
-import coconutCashewImage1 from '@/assets/coconut-cashew-cheesecake-1.jpg';
-import coconutCashewImage2 from '@/assets/coconut-cashew-cheesecake-2.jpg';
-
-interface CakeSize {
-  size: string;
-  price: number;
-}
-
-interface Cake {
+interface Product {
   id: string;
   name: string;
+  slug: string;
+  short_description: string;
   description: string;
-  image: string;
   allergens: string[];
-  sizes: CakeSize[];
-  featured?: boolean;
+  images: string[];
+  featured: boolean;
+  active: boolean;
+  categories?: {
+    name: string;
+  };
+  product_sizes?: {
+    size: string;
+    price: number;
+    is_available: boolean;
+  }[];
 }
 
-const cakes: Cake[] = [
-  {
-    id: 'basque-burnt',
-    name: 'Basque Burnt Cheesecake',
-    description: 'Our signature burnt cheesecake with a perfectly caramelised top and creamy centre. The original that started our journey.',
-    image: basqueImage1,
-    allergens: ['Milk', 'Eggs'],
-    sizes: [
-      { size: '6"', price: 22 },
-      { size: '8"', price: 34 },
-      { size: '10"', price: 46 }
-    ],
-    featured: true
-  },
-  {
-    id: 'tiramisu-basque',
-    name: 'Creamy Basque Cheesecake (Tiramisu Top)',
-    description: 'A luxurious twist combining our signature Basque cheesecake with a delicate tiramisu-flavoured mascarpone layer.',
-    image: tiramisuImage,
-    allergens: ['Milk', 'Eggs', 'Gluten (wheat)'],
-    sizes: [
-      { size: '8"', price: 38 }
-    ],
-    featured: true
-  },
-  {
-    id: 'coconut-cashew-basque',
-    name: 'Coconut Cashew Basque Cheesecake',
-    description: 'Rich Basque cheesecake topped with roasted cashews and coconut flakes for a delightful textural contrast.',
-    image: coconutCashewImage1,
-    allergens: ['Milk', 'Eggs', 'Tree Nuts (cashew)', 'Coconut'],
-    sizes: [
-      { size: '8"', price: 36 }
-    ],
-    featured: true
-  },
-  {
-    id: 'classic-ny',
-    name: 'Classic New York Cheesecake',
-    description: 'Traditional American-style cheesecake with a graham cracker base and smooth, dense texture.',
-    image: basqueImage2,
-    allergens: ['Milk', 'Eggs', 'Gluten (wheat)'],
-    sizes: [
-      { size: '8"', price: 34 }
-    ]
-  },
-  {
-    id: 'seasonal-fruit',
-    name: 'Seasonal Fruit Cheesecake',
-    description: 'Our classic cheesecake adorned with the finest seasonal fruits. Flavours change throughout the year.',
-    image: basqueImage3,
-    allergens: ['Milk', 'Eggs', 'Gluten (wheat)'],
-    sizes: [
-      { size: '8"', price: 38 }
-    ]
-  }
-];
-
 const Menu = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { addToCart } = useCart();
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          categories (name),
+          product_sizes (
+            size,
+            price,
+            is_available
+          )
+        `)
+        .eq('active', true)
+        .order('featured', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error loading products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddToCart = async (product: Product, size?: { size: string; price: number }) => {
+    if (!size && product.product_sizes?.[0]) {
+      size = product.product_sizes[0];
+    }
+
+    if (!size) {
+      toast({
+        title: 'Error',
+        description: 'Please select a size first',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      await addToCart(product, size.size, 1);
+      
+      toast({
+        title: 'Added to cart',
+        description: `${product.name} (${size.size}) added to your cart`,
+      });
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to add item to cart',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: 'GBP'
+    }).format(amount);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -125,27 +150,27 @@ const Menu = () => {
       <section className="py-16">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {cakes.map((cake) => (
-              <Card key={cake.id} className="card-elegant group">
+            {products.map((product) => (
+              <Card key={product.id} className="card-elegant group">
                 {/* Image */}
                 <div className="relative overflow-hidden">
-                  {cake.featured && (
+                  {product.featured && (
                     <Badge className="absolute top-4 left-4 z-10 bg-primary text-primary-foreground">
                       Featured
                     </Badge>
                   )}
                   <img 
-                    src={cake.image} 
-                    alt={cake.name}
+                    src={product.images?.[0] || '/placeholder-cake.jpg'} 
+                    alt={product.name}
                     className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-aurelise-cocoa/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
 
                 <CardHeader>
-                  <CardTitle className="font-heading text-xl">{cake.name}</CardTitle>
+                  <CardTitle className="font-heading text-xl">{product.name}</CardTitle>
                   <p className="text-muted-foreground text-sm leading-relaxed">
-                    {cake.description}
+                    {product.short_description}
                   </p>
                 </CardHeader>
 
@@ -154,38 +179,69 @@ const Menu = () => {
                   <div className="space-y-2">
                     <h4 className="font-semibold text-sm">Sizes & Prices:</h4>
                     <div className="flex flex-wrap gap-2">
-                      {cake.sizes.map((size) => (
-                        <div key={size.size} className="flex items-center space-x-2 bg-secondary px-3 py-1 rounded-full">
-                          <span className="text-sm font-medium">{size.size}</span>
-                          <span className="text-sm text-primary font-semibold">£{size.price}</span>
-                        </div>
+                      {product.product_sizes?.map((size) => (
+                        <button
+                          key={size.size}
+                          onClick={() => handleAddToCart(product, size)}
+                          disabled={!size.is_available}
+                          className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm transition-colors ${
+                            size.is_available 
+                              ? 'bg-secondary hover:bg-primary hover:text-primary-foreground cursor-pointer' 
+                              : 'bg-muted text-muted-foreground cursor-not-allowed'
+                          }`}
+                        >
+                          <span className="font-medium">{size.size}</span>
+                          <span className="font-semibold">{formatCurrency(size.price)}</span>
+                          <ShoppingCart className="h-3 w-3" />
+                        </button>
                       ))}
                     </div>
                   </div>
 
                   {/* Allergens */}
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-sm flex items-center space-x-2">
-                      <AlertTriangle className="h-4 w-4 text-orange-500" />
-                      <span>Allergens:</span>
-                    </h4>
-                    <div className="flex flex-wrap gap-1">
-                      {cake.allergens.map((allergen) => (
-                        <Badge key={allergen} variant="outline" className="text-xs">
-                          {allergen}
-                        </Badge>
-                      ))}
+                  {product.allergens && product.allergens.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-sm flex items-center space-x-2">
+                        <AlertTriangle className="h-4 w-4 text-orange-500" />
+                        <span>Allergens:</span>
+                      </h4>
+                      <div className="flex flex-wrap gap-1">
+                        {product.allergens.map((allergen) => (
+                          <Badge key={allergen} variant="outline" className="text-xs">
+                            {allergen}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* CTA Button */}
-                  <Button className="w-full btn-hero">
-                    Pre-Order This Cake
-                  </Button>
+                  {/* CTA Buttons */}
+                  <div className="flex gap-2">
+                    <Link to={`/product/${product.slug}`} className="flex-1">
+                      <Button variant="outline" className="w-full">
+                        View Details
+                      </Button>
+                    </Link>
+                    <Button 
+                      onClick={() => handleAddToCart(product)}
+                      className="btn-hero"
+                      disabled={!product.product_sizes?.length}
+                    >
+                      <ShoppingCart className="h-4 w-4 mr-1" />
+                      Add
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
+
+          {products.length === 0 && (
+            <div className="text-center py-16">
+              <h3 className="text-2xl font-semibold mb-4">No products available</h3>
+              <p className="text-muted-foreground">Please check back later for our delicious offerings.</p>
+            </div>
+          )}
         </div>
       </section>
 

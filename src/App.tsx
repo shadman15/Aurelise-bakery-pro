@@ -21,6 +21,9 @@ import { AdminLogin } from "./pages/admin/auth/AdminLogin";
 import { AdminSignup } from "./pages/admin/auth/AdminSignup";
 import { Dashboard } from "./pages/admin/Dashboard";
 import { Products } from "./pages/admin/Products";
+import { ProductNew } from "./pages/admin/ProductNew";
+import { ProductEdit } from "./pages/admin/ProductEdit";
+import { Content } from "./pages/admin/Content";
 import { Orders } from "./pages/admin/Orders";
 import { Settings } from "./pages/admin/Settings";
 import { Customers } from "./pages/admin/Customers";
@@ -47,10 +50,12 @@ const App = () => (
                     <Routes>
                       <Route path="dashboard" element={<Dashboard />} />
                       <Route path="products" element={<Products />} />
+                      <Route path="products/new" element={<ProductNew />} />
+                      <Route path="products/:id/edit" element={<ProductEdit />} />
+                      <Route path="content" element={<Content />} />
                       <Route path="orders" element={<Orders />} />
                       <Route path="customers" element={<Customers />} />
                       <Route path="settings" element={<Settings />} />
-                      <Route path="content" element={<ComingSoon />} />
                       <Route path="analytics" element={<ComingSoon />} />
                       <Route path="" element={<Dashboard />} />
                     </Routes>
