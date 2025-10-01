@@ -187,19 +187,46 @@ export function ProductForm() {
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
-    // Placeholder for image upload - would integrate with Supabase Storage or UploadThing
-    toast({
-      title: 'Image Upload',
-      description: 'Image upload integration pending. Using placeholder URLs for now.',
-    });
+    setLoading(true);
+    try {
+      const uploadedUrls: string[] = [];
 
-    // Mock image URLs for now
-    const mockUrls = Array.from(files).map((_, index) => 
-      `https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop&crop=center&${Math.random()}`
-    );
-    setImages([...images, ...mockUrls]);
+      for (const file of Array.from(files)) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError, data } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(filePath);
+
+        uploadedUrls.push(publicUrl);
+      }
+
+      setImages([...images, ...uploadedUrls]);
+      toast({
+        title: 'Success',
+        description: `${uploadedUrls.length} image(s) uploaded successfully`,
+      });
+    } catch (error: any) {
+      console.error('Error uploading images:', error);
+      toast({
+        title: 'Upload Failed',
+        description: error.message || 'Failed to upload images',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const removeImage = (index: number) => {
