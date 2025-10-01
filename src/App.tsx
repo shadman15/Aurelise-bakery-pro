@@ -27,6 +27,10 @@ import { Content } from "./pages/admin/Content";
 import { Orders } from "./pages/admin/Orders";
 import { Settings } from "./pages/admin/Settings";
 import { Customers } from "./pages/admin/Customers";
+import Categories from "./pages/admin/Categories";
+import Pages from "./pages/admin/Pages";
+import Posts from "./pages/admin/Posts";
+import Checkout from "./pages/Checkout";
 
 const queryClient = new QueryClient();
 
@@ -49,11 +53,14 @@ const App = () => (
                   <AdminLayout>
                     <Routes>
                       <Route path="dashboard" element={<Dashboard />} />
-                      <Route path="products" element={<Products />} />
-                      <Route path="products/new" element={<ProductNew />} />
-                      <Route path="products/:id/edit" element={<ProductEdit />} />
-                      <Route path="content" element={<Content />} />
-                      <Route path="orders" element={<Orders />} />
+                       <Route path="products" element={<Products />} />
+                       <Route path="products/new" element={<ProductNew />} />
+                       <Route path="products/:id/edit" element={<ProductEdit />} />
+                       <Route path="categories" element={<Categories />} />
+                       <Route path="pages" element={<Pages />} />
+                       <Route path="posts" element={<Posts />} />
+                       <Route path="content" element={<Content />} />
+                       <Route path="orders" element={<Orders />} />
                       <Route path="customers" element={<Customers />} />
                       <Route path="settings" element={<Settings />} />
                       <Route path="analytics" element={<ComingSoon />} />
@@ -77,7 +84,7 @@ const App = () => (
                     <Route path="/terms" element={<ComingSoon />} />
                     <Route path="/privacy" element={<ComingSoon />} />
                     <Route path="/cart" element={<ComingSoon />} />
-                    <Route path="/checkout" element={<ComingSoon />} />
+                    <Route path="/checkout" element={<Checkout />} />
                     <Route path="/account" element={<ComingSoon />} />
                     <Route path="/account/orders" element={<ComingSoon />} />
                     <Route path="/account/addresses" element={<ComingSoon />} />

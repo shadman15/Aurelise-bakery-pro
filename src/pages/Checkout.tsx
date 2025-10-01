@@ -84,8 +84,8 @@ const CheckoutForm = ({ clientSecret, orderData }: { clientSecret: string; order
 };
 
 export default function Checkout() {
-  const { items, total, clearCart } = useCart();
-  const { user, profile } = useAuth();
+  const { items, totalPrice, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(false);
@@ -100,10 +100,10 @@ export default function Checkout() {
   const [specialInstructions, setSpecialInstructions] = useState('');
   
   // Customer info
-  const [firstName, setFirstName] = useState(profile?.first_name || '');
-  const [lastName, setLastName] = useState(profile?.last_name || '');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState(user?.email || '');
-  const [phone, setPhone] = useState(profile?.phone || '');
+  const [phone, setPhone] = useState('');
   
   // Delivery address
   const [street, setStreet] = useState('');
@@ -112,7 +112,7 @@ export default function Checkout() {
   const [county, setCounty] = useState('');
 
   const deliveryFee = deliveryType === 'DELIVERY' ? 5.00 : 0;
-  const subtotal = total;
+  const subtotal = totalPrice;
   const tax = subtotal * 0.2; // 20% VAT
   const finalTotal = subtotal + deliveryFee + tax;
 
@@ -146,7 +146,7 @@ export default function Checkout() {
       // Create order in database
       const { data: order, error: orderError } = await supabase
         .from('orders')
-        .insert({
+        .insert([{
           user_id: user?.id || null,
           order_date: new Date().toISOString().split('T')[0],
           delivery_date: format(deliveryDate, 'yyyy-MM-dd'),
@@ -174,7 +174,7 @@ export default function Checkout() {
           special_instructions: specialInstructions || null,
           status: 'PENDING',
           payment_status: 'PENDING'
-        })
+        }])
         .select()
         .single();
 
@@ -183,10 +183,10 @@ export default function Checkout() {
       // Create order items
       const orderItems = items.map(item => ({
         order_id: order.id,
-        product_id: item.product.id,
-        size: item.size.size,
+        product_id: item.productId,
+        size: item.size,
         quantity: item.quantity,
-        price: item.size.price
+        price: item.unitPrice
       }));
 
       const { error: itemsError } = await supabase
@@ -425,14 +425,14 @@ export default function Checkout() {
             </CardHeader>
             <CardContent className="space-y-4">
               {items.map((item) => (
-                <div key={`${item.product.id}-${item.size.size}`} className="flex justify-between">
+                <div key={`${item.productId}-${item.size}`} className="flex justify-between">
                   <div className="flex-1">
-                    <p className="font-medium">{item.product.name}</p>
+                    <p className="font-medium">{item.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      Size: {item.size.size} × {item.quantity}
+                      Size: {item.size} × {item.quantity}
                     </p>
                   </div>
-                  <p className="font-medium">£{(item.size.price * item.quantity).toFixed(2)}</p>
+                  <p className="font-medium">£{(item.unitPrice * item.quantity).toFixed(2)}</p>
                 </div>
               ))}
 
