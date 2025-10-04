@@ -143,10 +143,16 @@ export default function Checkout() {
 
     setLoading(true);
     try {
+      // Generate order number
+      const { data: orderNumber, error: orderNumberError } = await supabase.rpc('generate_order_number');
+      
+      if (orderNumberError) throw orderNumberError;
+
       // Create order in database
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert([{
+          order_number: orderNumber,
           user_id: user?.id || null,
           order_date: new Date().toISOString().split('T')[0],
           delivery_date: format(deliveryDate, 'yyyy-MM-dd'),
